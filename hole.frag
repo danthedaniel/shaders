@@ -44,12 +44,12 @@ vec4 draw(vec2 pos) {
 
         // Rotate each circle in turn
         // Get a float value from 0..num_circles (don't rotate the last circle)
-        float circle_to_rotate = mod(t / 2.0, num_circles - 1.0);
+        float circle_to_rotate = mod(t / PI, num_circles - 1.0);
         // Get the fractional component of the value
         float rotate_index = mod(circle_to_rotate, 1.0) * TAU;
         // How much to rotate if this is the circle to rotate
-        float rotate_amount = (sin(rotate_index + 3.0 * PI / 2.0) + 1.0) / 2.0;
-        // Actual rotation amount (0.0 if not rotating+)
+        float rotate_amount = (sin(rotate_index + 3.0 * PI / 2.0) + 1.0) / 2.0 * PI;
+        // Actual rotation amount (0.0 if not rotating)
         float rotate_angle = floor(circle_to_rotate) == i ? rotate_amount : 0.0;
 
         // Location on the buffer
