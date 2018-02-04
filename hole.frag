@@ -12,7 +12,8 @@ vec3 hsv2rgb(vec3 c);
 mat2 rotate(float t);
 
 vec4 draw_texture(vec2 pos) {
-    float value = 0.7;
+    float wobbly_edge = snoise(pos * 10.0) * 0.03;
+    float value = length(pos) > (0.43 + wobbly_edge) ? 0.0 : 0.7;
     float hue = length(pos);
     return vec4(hsv2rgb(vec3(hue, 0.62, value)), 1.0);
 }
@@ -20,7 +21,7 @@ vec4 draw_texture(vec2 pos) {
 vec4 draw_circle(vec2 pos, float radius, float rotate_angle) {
     pos = rotate(rotate_angle) * pos;
     float angle = atan(pos.y, pos.x);
-    float wobbly_edge = snoise(pos * 15.0) * 0.03;
+    float wobbly_edge = snoise(pos * 15.1) * 0.03;
 
     if (length(pos) < (radius + wobbly_edge)) {
         return vec4(0.0, 0.0, 0.0, 0.28);
