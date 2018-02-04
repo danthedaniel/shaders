@@ -29,30 +29,51 @@ vec4 draw_circle(vec2 pos, float radius, float rotate_angle) {
     }
 }
 
-void main() {
+vec4 draw(vec2 pos) {
     vec4 color = vec4(vec3(1.0), 0.0);
     float t = u_time * 0.75;
-    int num_circles = 6;
+    float num_circles = 6.0;
 
     for (int i = 0; i < num_circles; ++i) {
-        float offset_size = (num_circles - (i + 1)) * 0.0125;
-        float angle = offset_size * PI / 32;
+        // Wiggle the circles around
+        float offset_size = (num_circles - (i + 1.0)) * 0.0125;
+        float angle = offset_size * PI / 32.0;
         vec2 offset = vec2(cos(t + angle), sin(t + angle)) * vec2(offset_size);
+        // Circle size
         float radius = i * 0.04 + 0.15;
 
         // Rotate each circle in turn
-        float circle_to_rotate = mod(t / 2.0, num_circles - 1);
+        // Get a float value from 0..num_circles (don't rotate the last circle)
+        float circle_to_rotate = mod(t / 2.0, num_circles - 1.0);
+        // Get the fractional component of the value
         float rotate_index = mod(circle_to_rotate, 1.0) * TAU;
-        float rotate_angle = floor(circle_to_rotate) == i ? (sin(rotate_index + 3 * PI / 2) + 1) / 2 : 0.0;
+        // How much to rotate if this is the circle to rotate
+        float rotate_amount = (sin(rotate_index + 3.0 * PI / 2.0) + 1.0) / 2.0;
+        // Actual rotation amount (0.0 if not rotating+)
+        float rotate_angle = floor(circle_to_rotate) == i ? rotate_amount : 0.0;
 
-        vec2 st = offset + gl_FragCoord.xy / u_resolution.xy;
+        // Location on the buffer
+        vec2 st = offset + pos / u_resolution.xy;
         vec2 pos = vec2(0.5) - st;
 
+        // Draw the sample
         vec4 circle = draw_circle(pos, radius, rotate_angle);
         color = mix(color, circle, circle.a);
     }
 
-    gl_FragColor = color;
+    return color;
+}
+
+void main() {
+    vec4 color = vec4(0.0);
+
+    // Perform SSAA on the sampleing routine (draw)
+    float ssaa_amount = 3.0;
+    for (int i = 0; i < ssaa_amount; ++i)
+        for (int j = 0; j < ssaa_amount; ++j)
+            color += draw(gl_FragCoord.xy + vec2(i, j) / ssaa_amount);
+
+    gl_FragColor = color / (ssaa_amount * ssaa_amount);
 }
 
 mat2 rotate(float t) {
